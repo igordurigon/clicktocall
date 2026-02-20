@@ -182,6 +182,7 @@ app.post("/api/call", authMiddleware, async (req, res) => {
     }
 
     const oauthToken = await getOAuthToken();
+    });
 
     const response = await axios({
       method: "GET",
