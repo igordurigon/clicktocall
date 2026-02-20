@@ -73,12 +73,47 @@ app.post("/api/login", async (req, res) => {
   res.json({ token, role: user.rows[0].role });
 });
 
-app.post("/api/call", async (req, res) => {
+app.put("/api/me/ramal", authMiddleware, async (req, res) => {
   try {
-    const { ramal, numero } = req.body;
+    const { ramal } = req.body;
 
-    if (!ramal || !numero) {
-      return res.status(400).json({ error: "ramal e numero são obrigatórios" });
+    if (!ramal) {
+      return res.status(400).json({ error: "Ramal é obrigatório" });
+    }
+
+    await pool.query(
+      "UPDATE users SET ramal=$1 WHERE id=$2",
+      [ramal, req.user.id]
+    );
+
+    res.json({ message: "Ramal atualizado com sucesso" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao atualizar ramal" });
+  }
+});
+
+app.post("/api/call", authMiddleware, async (req, res) => {
+  try {
+    const { numero } = req.body;
+
+    if (!numero) {
+      return res.status(400).json({ error: "Número é obrigatório" });
+    }
+
+    // Buscar ramal do usuário logado
+    const user = await pool.query(
+      "SELECT ramal FROM users WHERE id=$1",
+      [req.user.id]
+    );
+
+    const ramal = user.rows[0].ramal;
+
+    if (!ramal) {
+      return res.status(400).json({
+        error: "Usuário não possui ramal configurado"
+      });
     }
 
     const token = await getOAuthToken();
@@ -96,6 +131,18 @@ app.post("/api/call", async (req, res) => {
         }
       }
     );
+
+    res.json(response.data);
+
+  } catch (err) {
+    console.error("Erro Asterisk:", err.response?.data || err.message);
+
+    res.status(500).json({
+      error: "Erro ao realizar chamada",
+      detail: err.response?.data || err.message
+    });
+  }
+});
 
     res.json(response.data);
 
