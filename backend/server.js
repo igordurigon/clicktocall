@@ -103,31 +103,35 @@ app.put("/api/me/ramal", authMiddleware, async (req, res) => {
 });
 
 app.post("/api/call", authMiddleware, async (req, res) => {
+
+  let ramal = null;
+  let numero = null;
+
   try {
-    const { numero } = req.body;
+    numero = req.body.numero;
 
     if (!numero) {
       return res.status(400).json({ error: "Número é obrigatório" });
     }
-  await pool.query(
-    "INSERT INTO calls (user_id, ramal, numero_externo, status) VALUES ($1,$2,$3,$4)",
-    [req.user.id, ramal, numero, "enviada"]
-);
+
+    // Buscar ramal do usuário
     const user = await pool.query(
       "SELECT ramal FROM users WHERE id=$1",
       [req.user.id]
     );
-  
-    const ramal = user.rows[0].ramal;
+
+    ramal = user.rows[0]?.ramal;
 
     if (!ramal) {
+
+      await pool.query(
+        "INSERT INTO calls (user_id, ramal, numero_externo, status) VALUES ($1,$2,$3,$4)",
+        [req.user.id, null, numero, "erro_sem_ramal"]
+      );
+
       return res.status(400).json({
         error: "Usuário não possui ramal configurado"
       });
-  await pool.query(
-    "INSERT INTO calls (user_id, ramal, numero_externo, status) VALUES ($1,$2,$3,$4)",
-    [req.user.id, ramal || null, numero || null, "erro"]
-);
     }
 
     const token = await getOAuthToken();
@@ -146,9 +150,22 @@ app.post("/api/call", authMiddleware, async (req, res) => {
       }
     );
 
+    // Salvar sucesso
+    await pool.query(
+      "INSERT INTO calls (user_id, ramal, numero_externo, status) VALUES ($1,$2,$3,$4)",
+      [req.user.id, ramal, numero, "enviada"]
+    );
+
     res.json(response.data);
 
   } catch (err) {
+
+    // Salvar erro
+    await pool.query(
+      "INSERT INTO calls (user_id, ramal, numero_externo, status) VALUES ($1,$2,$3,$4)",
+      [req.user.id, ramal, numero, "erro"]
+    );
+
     console.error("Erro Asterisk:", err.response?.data || err.message);
 
     res.status(500).json({
@@ -156,42 +173,6 @@ app.post("/api/call", authMiddleware, async (req, res) => {
       detail: err.response?.data || err.message
     });
   }
-});
-
-app.get("/api/my-calls", authMiddleware, async (req, res) => {
-  const calls = await pool.query(
-    "SELECT * FROM calls WHERE user_id=$1 ORDER BY created_at DESC",
-    [req.user.id]
-  );
-
-  res.json(calls.rows);
-});
-
-app.get("/api/admin/users", authMiddleware, async (req, res) => {
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ error: "Acesso negado" });
-  }
-
-  const users = await pool.query(
-    "SELECT id, email, role, ramal FROM users ORDER BY id"
-  );
-
-  res.json(users.rows);
-});
-
-app.get("/api/admin/calls", authMiddleware, async (req, res) => {
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ error: "Acesso negado" });
-  }
-
-  const calls = await pool.query(`
-    SELECT calls.*, users.email
-    FROM calls
-    JOIN users ON users.id = calls.user_id
-    ORDER BY created_at DESC
-  `);
-
-  res.json(calls.rows);
 });
 
 app.listen(9191, () => console.log("Server running on 9191"));
