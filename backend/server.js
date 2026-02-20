@@ -92,7 +92,6 @@ app.put("/api/me/ramal", authMiddleware, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Erro ao atualizar ramal" });
   }
-});
 
 app.post("/api/call", authMiddleware, async (req, res) => {
   try {
