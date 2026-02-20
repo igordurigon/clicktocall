@@ -75,3 +75,28 @@ async function ligar() {
   console.log(data);
   alert(data.error || "Chamada enviada!");
 }
+async function carregarHistorico() {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch("/api/my-calls", {
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  });
+
+  const calls = await res.json();
+
+  const div = document.getElementById("historico");
+  div.innerHTML = "";
+
+  calls.forEach(call => {
+    div.innerHTML += `
+      <p>
+        ${call.created_at} |
+        Ramal: ${call.ramal} |
+        Número: ${call.numero_externo} |
+        Status: ${call.status}
+      </p>
+    `;
+  });
+}
