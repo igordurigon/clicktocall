@@ -29,7 +29,7 @@ async function ligar() {
     body: JSON.stringify({
       numero: numero
   })
-}
+})
 
   const data = await res.json();
   document.getElementById("resultado").innerText =
