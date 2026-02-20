@@ -1,5 +1,4 @@
 require("dotenv").config();
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
@@ -182,6 +181,12 @@ app.post("/api/call", authMiddleware, async (req, res) => {
     }
 
     const oauthToken = await getOAuthToken();
+
+    // Permitir certificado self-signed apenas aqui
+    const https = require("https");
+
+    const agent = new https.Agent({
+      rejectUnauthorized: false
     });
 
     const response = await axios({
@@ -189,15 +194,14 @@ app.post("/api/call", authMiddleware, async (req, res) => {
       url: `https://138.122.67.122/api/server/${process.env.ASTERISK_SERVER_ID}/make-calls`,
       httpsAgent: agent,
       params: {
-      ramal: ramal,
-      id_company: process.env.ASTERISK_COMPANY_ID,
-      number: numero
-  },
-    headers: {
-      Authorization: `Bearer ${oauthToken}`
-  }
-});
-
+        ramal: ramal,
+        id_company: process.env.ASTERISK_COMPANY_ID,
+        number: numero
+      },
+      headers: {
+        Authorization: `Bearer ${oauthToken}`
+      }
+    });
     // Salvar sucesso
     await pool.query(
       "INSERT INTO calls (user_id, ramal, numero_externo, status) VALUES ($1,$2,$3,$4)",
