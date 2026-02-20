@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const { Pool } = require("pg");
 const path = require("path");
-const axios = require("axios");
 const { getOAuthToken } = require("./oauth");
 
 const app = express();
