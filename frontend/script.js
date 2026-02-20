@@ -24,10 +24,12 @@ async function ligar() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer " + localStorage.getItem("token")
-    },
-    body: JSON.stringify({ destino })
-  });
+      "Authorization": "Bearer " + token
+  },
+    body: JSON.stringify({
+      numero: numero
+  })
+})
 
   const data = await res.json();
   document.getElementById("resultado").innerText =
