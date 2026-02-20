@@ -6,19 +6,36 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <div class="container">
+
   <h2>Realizar Ligação</h2>
-  <input type="text" id="destino" placeholder="Número destino">
-  <button onclick="ligar()">Ligar</button>
-  <button onclick="logout()">Sair</button>
-  <input type="text" id="ramal" placeholder="Seu ramal">
-  <button onclick="salvarRamal()">Salvar Ramal</button>
+
   <input type="text" id="destino" placeholder="Número externo">
   <button onclick="ligar()">Ligar</button>
-  <p id="resultado"></p>
-</div>
+
+  <hr>
+
+  <h3>Configurar Ramal</h3>
+
+  <input type="text" id="ramal" placeholder="Seu ramal">
+  <button onclick="salvarRamal()">Salvar Ramal</button>
+
+  <hr>
+
+  <h3>Histórico</h3>
   <button onclick="carregarHistorico()">Ver Histórico</button>
-<div id="historico"></div>
+  <div id="historico"></div>
+
+  <hr>
+
+  <button onclick="logout()" style="background-color:#c0392b;color:white;">
+    Sair
+  </button>
+
+</div>
+
 <script src="script.js"></script>
+
 </body>
 </html>
