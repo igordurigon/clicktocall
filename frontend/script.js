@@ -2,7 +2,7 @@ async function login() {
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
 
-  const res = await fetch("/api/login", {
+  const res = await fetch("http://backend:9090/api/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, senha })
@@ -20,7 +20,7 @@ async function login() {
 async function ligar() {
   const destino = document.getElementById("destino").value;
 
-  const res = await fetch("/api/call", {
+  const res = await fetch("http://backend:9191/api/call", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
