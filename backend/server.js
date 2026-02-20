@@ -6,6 +6,8 @@ const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const { Pool } = require("pg");
 const path = require("path");
+const axios = require("axios");
+const { getOAuthToken } = require("./oauth");
 
 const app = express();
 app.use(cors());
@@ -72,30 +74,39 @@ app.post("/api/login", async (req, res) => {
   res.json({ token, role: user.rows[0].role });
 });
 
-app.post("/api/call", authMiddleware, async (req, res) => {
-  const { destino } = req.body;
-  const user = await pool.query("SELECT * FROM users WHERE id=$1", [req.user.id]);
-  const ramal = user.rows[0].ramal;
-
-  if (!ramal) return res.status(400).json({ error: "Ramal not configured" });
-
+app.post("/api/call", async (req, res) => {
   try {
-    await axios.post(
-      `${process.env.ASTERISK_ARI_URL}/channels`,
+    const { ramal, numero } = req.body;
+
+    if (!ramal || !numero) {
+      return res.status(400).json({ error: "ramal e numero são obrigatórios" });
+    }
+
+    const token = await getOAuthToken();
+
+    const response = await axios.get(
+      `https://138.122.67.122/api/server/${process.env.ASTERISK_SERVER_ID}/make-calls`,
       {
-        endpoint: `PJSIP/${ramal}`,
-        extension: destino,
-        context: "from-internal",
-        priority: 1,
-        callerId: ramal
-      },
-      { headers: { Authorization: `Bearer ${process.env.ASTERISK_TOKEN}` } }
+        params: {
+          ramal: ramal,
+          id_company: process.env.ASTERISK_COMPANY_ID,
+          number: numero
+        },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
     );
 
-    res.json({ success: true });
-  } catch {
-    res.status(500).json({ error: "Call failed" });
+    res.json(response.data);
+
+  } catch (err) {
+    console.error("Erro Asterisk:", err.response?.data || err.message);
+
+    res.status(500).json({
+      error: "Erro ao realizar chamada",
+      detail: err.response?.data || err.message
+    });
   }
 });
-
 app.listen(9191, () => console.log("Server running on 9191"));
