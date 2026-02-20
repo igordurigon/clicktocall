@@ -39,3 +39,6 @@ volumes:
 networks:
   clicktocall_net:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.50.0.0/24
