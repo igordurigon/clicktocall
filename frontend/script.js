@@ -1,3 +1,4 @@
+// ===================== LOGIN =====================
 async function login() {
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
@@ -11,40 +12,57 @@ async function login() {
   });
 
   const data = await res.json();
+
   if (data.token) {
     localStorage.setItem("token", data.token);
     window.location.href = "dashboard.html";
   } else {
-    document.getElementById("msg").innerText = "Erro no login";
+    document.getElementById("msg").innerText = data.error || "Erro no login";
   }
 }
 
+// ===================== LIGAR =====================
 async function ligar() {
   const destino = document.getElementById("destino").value;
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Você precisa estar logado.");
+    return;
+  }
+
+  if (!destino) {
+    alert("Digite um número para ligar.");
+    return;
+  }
 
   const res = await fetch("/api/call", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer " + token
-  },
-    body: JSON.stringify({
-      numero: numero
-  })
-})
+    },
+    body: JSON.stringify({ numero: destino })
+  });
 
   const data = await res.json();
-  document.getElementById("resultado").innerText =
-    data.success ? "Ligação solicitada" : "Erro ao ligar";
+
+  if (res.ok) {
+    alert("Chamada enviada com sucesso!");
+  } else {
+    alert(data.error || "Erro ao realizar chamada");
+  }
 }
 
-function logout() {
-  localStorage.removeItem("token");
-  window.location.href = "/";
-}
+// ===================== SALVAR RAMAL =====================
 async function salvarRamal() {
   const ramal = document.getElementById("ramal").value;
   const token = localStorage.getItem("token");
+
+  if (!ramal) {
+    alert("Digite um ramal.");
+    return;
+  }
 
   const res = await fetch("/api/me/ramal", {
     method: "PUT",
@@ -58,23 +76,8 @@ async function salvarRamal() {
   const data = await res.json();
   alert(data.message || data.error);
 }
-async function ligar() {
-  const destino = document.getElementById("destino").value;
-  const token = localStorage.getItem("token");
 
-  const res = await fetch("/api/call", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + token
-    },
-    body: JSON.stringify({ numero: destino })
-  });
-
-  const data = await res.json();
-  console.log(data);
-  alert(data.error || "Chamada enviada!");
-}
+// ===================== HISTÓRICO =====================
 async function carregarHistorico() {
   const token = localStorage.getItem("token");
 
@@ -92,11 +95,17 @@ async function carregarHistorico() {
   calls.forEach(call => {
     div.innerHTML += `
       <p>
-        ${call.created_at} |
+        ${new Date(call.created_at).toLocaleString()} |
         Ramal: ${call.ramal} |
         Número: ${call.numero_externo} |
         Status: ${call.status}
       </p>
     `;
   });
+}
+
+// ===================== LOGOUT =====================
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "/";
 }
