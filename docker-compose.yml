@@ -28,8 +28,21 @@ services:
       ASTERISK_TOKEN: ${ASTERISK_TOKEN}
     depends_on:
       - db
+    expose:
+      - "9191"
+    networks:
+      - clicktocall_net
+
+  frontend:
+    image: nginx:alpine
+    container_name: clicktocall_frontend
+    restart: always
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
     ports:
-      - "9090:9090"
+      - "9090:80"
+    depends_on:
+      - backend
     networks:
       - clicktocall_net
 
