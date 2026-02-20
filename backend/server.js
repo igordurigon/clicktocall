@@ -72,7 +72,6 @@ app.post("/api/login", async (req, res) => {
 
   res.json({ token, role: user.rows[0].role });
 });
-
 app.put("/api/me/ramal", authMiddleware, async (req, res) => {
   try {
     const { ramal } = req.body;
@@ -92,6 +91,7 @@ app.put("/api/me/ramal", authMiddleware, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Erro ao atualizar ramal" });
   }
+});
 
 app.post("/api/call", authMiddleware, async (req, res) => {
   try {
@@ -101,7 +101,6 @@ app.post("/api/call", authMiddleware, async (req, res) => {
       return res.status(400).json({ error: "Número é obrigatório" });
     }
 
-    // Buscar ramal do usuário logado
     const user = await pool.query(
       "SELECT ramal FROM users WHERE id=$1",
       [req.user.id]
@@ -143,15 +142,4 @@ app.post("/api/call", authMiddleware, async (req, res) => {
   }
 });
 
-    res.json(response.data);
-
-  } catch (err) {
-    console.error("Erro Asterisk:", err.response?.data || err.message);
-
-    res.status(500).json({
-      error: "Erro ao realizar chamada",
-      detail: err.response?.data || err.message
-    });
-  }
-});
 app.listen(9191, () => console.log("Server running on 9191"));
