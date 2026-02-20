@@ -183,24 +183,25 @@ app.post("/api/call", authMiddleware, async (req, res) => {
     const oauthToken = await getOAuthToken();
 
     // Permitir certificado self-signed apenas aqui
+    const https = require("https");
+
     const agent = new https.Agent({
       rejectUnauthorized: false
-    });
+});
 
-    const response = await axios.get(
-      `https://138.122.67.122/api/server/${process.env.ASTERISK_SERVER_ID}/make-calls`,
-      {
-        httpsAgent: agent,
-        params: {
-          ramal: ramal,
-          id_company: process.env.ASTERISK_COMPANY_ID,
-          number: numero
-        },
-        headers: {
-          Authorization: `Bearer ${oauthToken}`
-        }
-      }
-    );
+    const response = await axios({
+      method: "GET",
+      url: `https://138.122.67.122/api/server/${process.env.ASTERISK_SERVER_ID}/make-calls`,
+      httpsAgent: agent,
+      params: {
+      ramal: ramal,
+      id_company: process.env.ASTERISK_COMPANY_ID,
+      number: numero
+  },
+    headers: {
+      Authorization: `Bearer ${oauthToken}`
+  }
+});
 
     // Salvar sucesso
     await pool.query(
