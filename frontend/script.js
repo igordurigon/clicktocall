@@ -2,7 +2,7 @@ async function login() {
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
 
-  const res = await fetch("/api/login", {
+  const res = await fetch("/api/login" {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, senha })
