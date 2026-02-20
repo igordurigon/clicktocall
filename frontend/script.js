@@ -42,3 +42,36 @@ function logout() {
   localStorage.removeItem("token");
   window.location.href = "/";
 }
+async function salvarRamal() {
+  const ramal = document.getElementById("ramal").value;
+  const token = localStorage.getItem("token");
+
+  const res = await fetch("/api/me/ramal", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ ramal })
+  });
+
+  const data = await res.json();
+  alert(data.message || data.error);
+}
+async function ligar() {
+  const destino = document.getElementById("destino").value;
+  const token = localStorage.getItem("token");
+
+  const res = await fetch("/api/call", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ numero: destino })
+  });
+
+  const data = await res.json();
+  console.log(data);
+  alert(data.error || "Chamada enviada!");
+}
